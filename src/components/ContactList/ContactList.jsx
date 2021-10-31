@@ -1,52 +1,65 @@
-import { useSelector } from "react-redux";
-import {
-  useFetchContactsQuery,
-  useDeleteContactMutation,
-} from "../../redux/Contacts/contactsSlice";
-import { getFilter } from "../../Selectors/contacts-selectors";
 import PropTypes from "prop-types";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import { StyledTableCell, StyledTableRow } from "./ContactListStyled";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchContacts, deleteContacts } from "../../redux/contacts";
+import css from "./ContactList.module.css";
+import { visibleList } from "../../redux/contacts";
 
-import ContactItem from "../ContactItem/ContactItem";
-import Button from "../Utils/Button/Button";
-import { List, Item } from "./Contacts.styled";
+export default function ContactList() {
+  const contacts = useSelector(visibleList);
 
-function ContactList() {
-  const { data: contactList } = useFetchContactsQuery();
-  const [deleteContact] = useDeleteContactMutation();
-  const filterValue = useSelector((state) => getFilter(state));
-  const contacts = contactList?.filter((contact) =>
-    contact.name.toLowerCase().includes(filterValue.toLowerCase())
-  );
+  const dispatch = useDispatch();
+  useEffect(() => dispatch(fetchContacts()), [dispatch]);
 
+  const deleteContact = (value) => dispatch(deleteContacts(value));
   return (
-    <>
-      <List>
-        {contactList &&
-          contacts.map((contact) => (
-            <Item key={contact.id}>
-              <ContactItem contact={contact} />
-              <Button
-                title="Remove from contacts"
-                text="Remove"
-                type="button"
-                onClick={() => deleteContact(contact.id)}
-              />
-            </Item>
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell>Name</StyledTableCell>
+            <StyledTableCell align="right">Phone</StyledTableCell>
+            <StyledTableCell align="right">Delete</StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {contacts.map((contact) => (
+            <StyledTableRow
+              key={contact.id}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <StyledTableCell component="th" scope="row">
+                {contact.name}
+              </StyledTableCell>
+              <StyledTableCell align="right">{contact.number}</StyledTableCell>
+              <StyledTableCell align="right">
+                <Button
+                  type="submit"
+                  className={css.button}
+                  variant="outlined"
+                  color="error"
+                  onClick={() => deleteContact(contact)}
+                >
+                  Delete
+                </Button>
+              </StyledTableCell>
+            </StyledTableRow>
           ))}
-      </List>
-    </>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 
 ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ),
-  onDeleteContact: PropTypes.func,
+  getVisibleContacts: PropTypes.func,
+  deleteContact: PropTypes.func,
 };
-
-export default ContactList;

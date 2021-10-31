@@ -1,4 +1,11 @@
 .App {
-  text-align: center;
+  margin: 50px;
 }
 
+.titlePhonebook {
+  font-size: 30px;
+}
+
+.titleContacts {
+  font-size: 30px;
+}

@@ -1,33 +1,38 @@
-import { useDispatch, useSelector } from "react-redux";
-import { filter } from "../../redux/Contacts/filterSlice";
-import { getFilter } from "../../Selectors/contacts-selectors";
 import PropTypes from "prop-types";
-import Title from "../Utils/Title/Title";
-import Input from "../Utils/Input/Input";
+import { useDispatch } from "react-redux";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import { filterContacts } from "../../redux/contacts";
+import css from "./Filter.module.css";
 
-function Filter() {
+export default function Filter() {
   const dispatch = useDispatch();
-  const value = useSelector((state) => getFilter(state));
-  const onChange = (e) => {
-    dispatch(filter(e.target.value));
+  const getVisibleList = (value) => dispatch(filterContacts(value));
+  const filterList = (e) => {
+    getVisibleList(e.target.value);
   };
 
   return (
-    <>
-      <Title size={18} text="Find Contacts by name" />
-      <Input
-        placeholder="type to find contacts..."
-        type="text"
+    <Box className={css.wrapper}>
+      <Typography variant="div" className={css.title}>
+        Find contacts by name
+      </Typography>
+      <TextField
+        className={css.input}
+        id="standard-search"
+        label="Search field"
+        type="search"
         name="filter"
-        value={value}
-        onChange={onChange}
+        variant="standard"
+        onChange={filterList}
+        margin="normal"
       />
-    </>
+    </Box>
   );
 }
-export default Filter;
 
 Filter.propTypes = {
-  value: PropTypes.string,
-  onChange: PropTypes.func,
+  filter: PropTypes.string,
+  formSubmitHandler: PropTypes.func,
 };

@@ -1,98 +1,79 @@
-import { useState } from "react";
-import { useCreateContactMutation, useFetchContactsQuery } from "../../redux/Contacts/contactsSlice";
 import PropTypes from "prop-types";
-import { Form } from "./ContactForm.styled";
-import Button from "../Utils/Button/Button";
-import Title from "../Utils/Title/Title";
-import Input from "../Utils/Input/Input";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import * as operations from "../../redux/contacts/contacts-operations";
+import { Button, TextField } from "@mui/material";
+import css from "./ContactForm.module.css";
 
-function ContactForm() {
+export default function ContactForm() {
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
-  const [createContact] = useCreateContactMutation();
-  const { data: contacts } = useFetchContactsQuery();
+  const dispatch = useDispatch();
+  const formSubmitHandler = (value) => dispatch(operations.addContacts(value));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
+  const handleChange = e => {
+    const { name, value } = e.currentTarget;
     switch (name) {
-      case "name":
+      case 'name':
         setName(value);
         break;
-      case "number":
+      case 'number':
         setNumber(value);
         break;
+
       default:
-        return;
+        break;
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const checkOnSameContact = contacts.find(
-      (contact) => contact.name.toLowerCase() === name.toLowerCase()
-    );
+    formSubmitHandler({ name, number });
 
-    if (checkOnSameContact) {
-      alert(`${name} is already in contacts`);
-      setName("");
-      setNumber("");
-      return;
-    }
+    reset();
+  };
 
-    if (name === "" || number === "") {
-      alert("Please fill empty fields");
-      return;
-    }
-
-    createContact({ name, number });
+  const reset = () => {
     setName("");
     setNumber("");
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Title marginR={15} size={18} text="Name" />
-      <Input
-        placeholder="type name..."
-        value={name}
+    <form className={css.form} onSubmit={handleSubmit}>
+      <TextField
+        className={css.input}
+        required
+        id="standard-required"
+        variant="standard"
+        label="Name"
         type="text"
         name="name"
-        pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-        title="Имя может состоять только из букв, апострофа, тире и пробелов. Например Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan и т. п."
-        required
+        value={name}
         onChange={handleChange}
+        margin="normal"
       />
-      <Title marginR={15} marginL={30} size={18} text="Number" />
-      <Input
-        placeholder="type number..."
-        value={number}
-        type="tel"
+
+      <TextField
+        className={css.input}
+        required
+        id="outlined-basic"
+        variant="outlined"
+        label="Number"
+        type="text"
         name="number"
-        pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-        title="Номер телефона должен состоять цифр и может содержать пробелы, тире, круглые скобки и может начинаться с +"
-        required
+        value={number}
         onChange={handleChange}
+        margin="normal"
       />
-      <Button
-        title="Add to contacts"
-        text="Add"
-        size={20}
-        type="submit"
-      />
-    </Form>
+
+      <Button type="submit" variant="contained">
+        Add contact
+      </Button>
+    </form>
   );
 }
 
-export default ContactForm;
-
 ContactForm.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ),
+  formSubmitHandler: PropTypes.func,
 };
